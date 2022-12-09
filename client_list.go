@@ -2,36 +2,32 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package rind
+package main
 
 import (
 	"net"
 	"sync"
 )
 
-type addrBag struct {
+type clientList struct {
 	sync.RWMutex
 	data map[string][]net.UDPAddr
 }
 
-func (b *addrBag) get(key string) ([]net.UDPAddr, bool) {
+func (b *clientList) get(key string) ([]net.UDPAddr, bool) {
 	b.RLock()
 	val, ok := b.data[key]
 	b.RUnlock()
 	return val, ok
 }
 
-func (b *addrBag) set(key string, addr net.UDPAddr) {
+func (b *clientList) set(key string, addr net.UDPAddr) {
 	b.Lock()
-	if _, ok := b.data[key]; ok {
-		b.data[key] = append(b.data[key], addr)
-	} else {
-		b.data[key] = []net.UDPAddr{addr}
-	}
+	b.data[key] = append(b.data[key], addr)
 	b.Unlock()
 }
 
-func (b *addrBag) remove(key string) bool {
+func (b *clientList) remove(key string) bool {
 	b.Lock()
 	_, ok := b.data[key]
 	delete(b.data, key)
